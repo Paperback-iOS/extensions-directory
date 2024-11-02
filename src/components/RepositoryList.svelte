@@ -1,14 +1,31 @@
 <script lang="ts">
   import { onMount } from "svelte"
-  import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-svelte"
+  import {
+    ChevronDown,
+    ChevronRight,
+    Plus,
+    Trash2,
+    Share,
+    Save,
+  } from "lucide-svelte"
 
   type Props = {
     repositories: string[]
+    readonly: boolean
+    onShareClick: () => void
+    onSaveClick: () => void
     onAddClick: () => void
     onRemoveRepository: (url: string) => void
   }
 
-  const { repositories = [], onAddClick, onRemoveRepository }: Props = $props()
+  const {
+    repositories = [],
+    readonly,
+    onSaveClick,
+    onShareClick,
+    onAddClick,
+    onRemoveRepository,
+  }: Props = $props()
   let isExpanded = $state(true)
 
   onMount(() => {
@@ -34,14 +51,40 @@
         <ChevronRight class="w-5 h-5 text-gray-500" />
       {/if}
       <h2 class="text-lg font-medium">Repositories</h2>
+      {#if readonly}
+        <span
+          class="px-2 py-1 text-xs font-semibold text-red-600 bg-red-100 rounded-full"
+        >
+          READONLY
+        </span>
+      {/if}
     </div>
-    <button
-      class="px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg hover:bg-white transition-colors flex items-center"
-      on:click|stopPropagation={onAddClick}
-    >
-      <Plus class="w-4 h-4 mr-1.5" />
-      Add Repository
-    </button>
+    {#if !readonly}
+      <div class="flex items-center space-x-2">
+        <button
+          class="px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg hover:bg-white transition-colors flex items-center"
+          on:click|stopPropagation={onShareClick}
+        >
+          <Share class="w-4 h-4 mr-1.5" />
+          Share
+        </button>
+        <button
+          class="px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg hover:bg-white transition-colors flex items-center"
+          on:click|stopPropagation={onAddClick}
+        >
+          <Plus class="w-4 h-4 mr-1.5" />
+          Add Repository
+        </button>
+      </div>
+    {:else}
+      <button
+        class="px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg hover:bg-white transition-colors flex items-center"
+        on:click|stopPropagation={onSaveClick}
+      >
+        <Save class="w-4 h-4 mr-1.5" />
+        Save
+      </button>
+    {/if}
   </div>
 
   {#if isExpanded}

@@ -8,6 +8,7 @@
 
   type SourceInfo = _SourceInfo & { id: string; repository: string }
   type SelectedPlugin = [string, string]
+  let readonly = $state(false)
 
   let searchQuery = $state("")
   let selectedPlugins: SelectedPlugin[] = $state([])
@@ -64,6 +65,24 @@
     } finally {
       addingRepo = false
     }
+  }
+
+  function saveCurrentRepositories() {
+    let repoSet: Set<string> = new Set()
+    const savedRepositories = localStorage.getItem("repositories")
+    if (savedRepositories) {
+      const repos = JSON.parse(savedRepositories)
+      repoSet = repoSet.union(new Set(repos))
+    }
+    repoSet = repoSet.union(new Set(repositories))
+    localStorage.setItem("repositories", JSON.stringify(Array.from(repoSet)))
+    window.location.href = window.location.origin
+  }
+
+  function shareCurrentRepositories() {
+    const currentLocation = window.location.origin + window.location.pathname
+    console.log(currentLocation)
+    window.open(currentLocation + '?data=' + btoa(JSON.stringify(repositories)))
   }
 
   async function removeRepository(url: string) {
@@ -157,6 +176,18 @@
     if (savedRepositories) {
       repositories = JSON.parse(savedRepositories)
     }
+
+    const searchParams = new URLSearchParams(window.location.search)
+    const base64Data = searchParams.get("data")
+    const dataJSON = atob(base64Data ?? "")
+    if (dataJSON) {
+      const data: string[] = JSON.parse(dataJSON)
+      if (data && data.length) {
+        repositories = data
+        readonly = true
+      }
+    }
+
     fetchPlugins()
   })
 </script>
@@ -174,6 +205,9 @@
         onRemoveRepository={(url: string) => {
           removeRepository(url)
         }}
+        {readonly}
+        onSaveClick={() => {saveCurrentRepositories()}}
+        onShareClick={() => {shareCurrentRepositories()}}
       />
 
       <!-- Search and Install Bar -->

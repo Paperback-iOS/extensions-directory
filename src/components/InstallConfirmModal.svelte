@@ -14,7 +14,6 @@
 <div
   id="install-modal"
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-  on:click={(e) => onClose()}
 >
   <div
     class="bg-white rounded-lg w-full max-w-md mx-4 flex flex-col max-h-[80vh]"
