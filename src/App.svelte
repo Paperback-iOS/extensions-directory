@@ -76,7 +76,7 @@
     }
     repoSet = repoSet.union(new Set(repositories))
     localStorage.setItem("repositories", JSON.stringify(Array.from(repoSet)))
-    window.location.href = window.location.origin
+    window.location.href = window.location.origin + window.location.pathname
   }
 
   function shareCurrentRepositories() {
