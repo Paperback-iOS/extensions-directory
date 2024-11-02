@@ -1,24 +1,24 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-svelte";
+  import { onMount } from "svelte"
+  import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-svelte"
 
   type Props = {
-    repositories: string[];
-    onAddClick: () => void;
-    onRemoveRepository: (url: string) => void;
-  };
+    repositories: string[]
+    onAddClick: () => void
+    onRemoveRepository: (url: string) => void
+  }
 
-  const { repositories = [], onAddClick, onRemoveRepository }: Props = $props();
-  let isExpanded = $state(true);
+  const { repositories = [], onAddClick, onRemoveRepository }: Props = $props()
+  let isExpanded = $state(true)
 
   onMount(() => {
-    const savedState = localStorage.getItem("repositoryListExpanded");
-    isExpanded = savedState === null ? true : savedState === "true";
-  });
+    const savedState = localStorage.getItem("repositoryListExpanded")
+    isExpanded = savedState === null ? true : savedState === "true"
+  })
 
   function toggleExpanded() {
-    isExpanded = !isExpanded;
-    localStorage.setItem("repositoryListExpanded", isExpanded.toString());
+    isExpanded = !isExpanded
+    localStorage.setItem("repositoryListExpanded", isExpanded.toString())
   }
 </script>
 

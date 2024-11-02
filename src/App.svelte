@@ -1,86 +1,84 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { Search } from "lucide-svelte";
-  import RepositoryList from "./components/RepositoryList.svelte";
-  import AddRepositoryModal from "./components/AddRepositoryModal.svelte";
-  import InstallConfirmModal from "./components/InstallConfirmModal.svelte";
-  import { type SourceInfo as _SourceInfo } from '@paperback/types';
+  import { onMount } from "svelte"
+  import { Search } from "lucide-svelte"
+  import RepositoryList from "./components/RepositoryList.svelte"
+  import AddRepositoryModal from "./components/AddRepositoryModal.svelte"
+  import InstallConfirmModal from "./components/InstallConfirmModal.svelte"
+  import { type SourceInfo as _SourceInfo } from "@paperback/types"
 
-  type SourceInfo = _SourceInfo & {id: string, repository: string}
+  type SourceInfo = _SourceInfo & { id: string; repository: string }
   type SelectedPlugin = [string, string]
 
-  let searchQuery = $state("");
-  let selectedPlugins: SelectedPlugin[]  = $state([]);
-  let allPlugins: SourceInfo[] = $state([]);
-  let loading = $state(true);
-  let error: string | null = $state(null);
+  let searchQuery = $state("")
+  let selectedPlugins: SelectedPlugin[] = $state([])
+  let allPlugins: SourceInfo[] = $state([])
+  let loading = $state(true)
+  let error: string | null = $state(null)
 
-  let showAddRepo = $state(false);
-  let showInstallConfirm = $state(false);
-  let addingRepo = $state(false);
-  let repoError = $state("");
-  let repositories: string[] = $state([]);
+  let showAddRepo = $state(false)
+  let showInstallConfirm = $state(false)
+  let addingRepo = $state(false)
+  let repoError = $state("")
+  let repositories: string[] = $state([])
 
   async function validateRepository(url: string) {
     try {
       const baseUrl = url.endsWith("versioning.json")
         ? url
-        : `${url.replace(/\/$/, "")}/versioning.json`;
-      const response = await fetch(baseUrl);
+        : `${url.replace(/\/$/, "")}/versioning.json`
+      const response = await fetch(baseUrl)
 
       if (!response.ok) {
-        throw new Error("Invalid repository URL");
+        throw new Error("Invalid repository URL")
       }
 
-      const data = await response.json();
+      const data = await response.json()
       if (!data.sources || !Array.isArray(data.sources)) {
-        throw new Error("Invalid repository format");
+        throw new Error("Invalid repository format")
       }
 
-      return baseUrl;
+      return baseUrl
     } catch (e) {
-      throw new Error("Failed to validate repository");
+      throw new Error("Failed to validate repository")
     }
   }
 
   async function addRepository(url: string) {
-    if (!url) return;
+    if (!url) return
 
-    addingRepo = true;
-    repoError = "";
+    addingRepo = true
+    repoError = ""
 
     try {
-      const validatedUrl = await validateRepository(url);
+      const validatedUrl = await validateRepository(url)
       if (!repositories.includes(validatedUrl)) {
-        repositories = [...repositories, validatedUrl];
-        localStorage.setItem("repositories", JSON.stringify(repositories));
-        await fetchPlugins();
-        showAddRepo = false;
+        repositories = [...repositories, validatedUrl]
+        localStorage.setItem("repositories", JSON.stringify(repositories))
+        await fetchPlugins()
+        showAddRepo = false
       } else {
-        repoError = "Repository already exists";
+        repoError = "Repository already exists"
       }
     } catch (e) {
-      repoError = (e as Error).message;
+      repoError = (e as Error).message
     } finally {
-      addingRepo = false;
+      addingRepo = false
     }
   }
 
   async function removeRepository(url: string) {
-    repositories = repositories.filter((repo) => repo !== url);
-    localStorage.setItem("repositories", JSON.stringify(repositories));
-    await fetchPlugins();
+    repositories = repositories.filter((repo) => repo !== url)
+    localStorage.setItem("repositories", JSON.stringify(repositories))
+    await fetchPlugins()
   }
 
   async function fetchPlugins() {
     try {
-      const responses = await Promise.all(
-        repositories.map((url) => fetch(url)),
-      );
-      const jsonData = await Promise.all(responses.map((res) => res.json()));
+      const responses = await Promise.all(repositories.map((url) => fetch(url)))
+      const jsonData = await Promise.all(responses.map((res) => res.json()))
 
       allPlugins = jsonData.flatMap((data, index) => {
-        const repository = repositories[index].replace("versioning.json", "");
+        const repository = repositories[index].replace("versioning.json", "")
         return data.sources.map((source: SourceInfo) => ({
           id: source.id,
           name: source.name,
@@ -92,13 +90,13 @@
           capabilities: source.capabilities,
           repository: repository,
           icon: repository + source.id + "/static/" + source.icon,
-        }));
-      });
-      loading = false;
+        }))
+      })
+      loading = false
     } catch (e) {
-      console.error("Error fetching plugins:", e);
-      error = "Failed to load plugins. Please try again later." + e;
-      loading = false;
+      console.error("Error fetching plugins:", e)
+      error = "Failed to load plugins. Please try again later." + e
+      loading = false
     }
   }
 
@@ -108,58 +106,59 @@
         plugin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         plugin.description.toLowerCase().includes(searchQuery.toLowerCase()),
     ),
-  );
+  )
 
   const selectedPluginDetails = $derived(
-    selectedPlugins.map(([id, url]) =>
-      allPlugins.find(
-        (plugin) => plugin.id === id && plugin.repository === url,
-      )!
+    selectedPlugins.map(
+      ([id, url]) =>
+        allPlugins.find(
+          (plugin) => plugin.id === id && plugin.repository === url,
+        )!,
     ),
-  );
+  )
 
   function togglePlugin(pluginId: SelectedPlugin) {
-    console.log(pluginId, selectedPlugins);
-    let index = indexOf(pluginId);
+    console.log(pluginId, selectedPlugins)
+    let index = indexOf(pluginId)
 
     if (index > -1) {
       // only splice array when item is found
-      selectedPlugins.splice(index, 1); // 2nd parameter means remove one item only
+      selectedPlugins.splice(index, 1) // 2nd parameter means remove one item only
     } else {
-      selectedPlugins.push(pluginId);
+      selectedPlugins.push(pluginId)
     }
   }
 
   function indexOf(pluginId: SelectedPlugin) {
-    let index = -1;
-    let i = 0;
+    let index = -1
+    let i = 0
     for (const [id, url] of selectedPlugins) {
       if (id === pluginId[0] && url === pluginId[1]) {
-        index = i;
+        index = i
       }
-      i++;
+      i++
     }
 
-    return index;
+    return index
   }
 
   function isSelected(pluginId: SelectedPlugin) {
-    return indexOf(pluginId) >= 0;
+    return indexOf(pluginId) >= 0
   }
 
   async function installSelectedPlugins() {
-    console.log("Installing plugins:", selectedPluginDetails);
-    showInstallConfirm = false;
-    selectedPlugins = [];
+    console.log("Installing plugins:", selectedPluginDetails)
+    showInstallConfirm = false
+    selectedPlugins = []
   }
 
   onMount(() => {
-    const savedRepositories = localStorage.getItem("repositories");
+    const savedRepositories = localStorage.getItem("repositories")
     if (savedRepositories) {
-      repositories = JSON.parse(savedRepositories);
+      repositories = JSON.parse(savedRepositories)
     }
-    fetchPlugins();
-  });
+    fetchPlugins()
+  })
 </script>
 
 <div class="min-h-screen bg-white text-gray-900">
@@ -173,7 +172,7 @@
         {repositories}
         onAddClick={() => (showAddRepo = true)}
         onRemoveRepository={(url: string) => {
-          removeRepository(url);
+          removeRepository(url)
         }}
       />
 

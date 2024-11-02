@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type { SourceInfo as _SourceInfo } from "@paperback/types";
-  import { X } from "lucide-svelte";
-  type SourceInfo = _SourceInfo & {id: string, repository: string}
+  import type { SourceInfo as _SourceInfo } from "@paperback/types"
+  import { X } from "lucide-svelte"
+  type SourceInfo = _SourceInfo & { id: string; repository: string }
   type Props = {
-    plugins: SourceInfo[];
-    onClose: () => void;
-    onConfirm: () => void;
-  };
+    plugins: SourceInfo[]
+    onClose: () => void
+    onConfirm: () => void
+  }
 
-  const { plugins = [], onClose, onConfirm }: Props = $props();
+  const { plugins = [], onClose, onConfirm }: Props = $props()
 </script>
 
 <div
