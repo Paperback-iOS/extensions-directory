@@ -73,7 +73,7 @@
           on:click|stopPropagation={onAddClick}
         >
           <Plus class="w-4 h-4 mr-1.5" />
-          Add Repository
+          Add
         </button>
       </div>
     {:else}

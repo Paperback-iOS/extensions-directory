@@ -168,6 +168,8 @@
   async function installSelectedPlugins() {
     console.log("Installing plugins:", selectedPluginDetails)
     showInstallConfirm = false
+    
+    window.location.href = "paperback://installExtensions?data=" + btoa(JSON.stringify(selectedPlugins))
     selectedPlugins = []
   }
 
